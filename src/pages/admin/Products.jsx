@@ -4,7 +4,7 @@ import AdminLayout from '../../components/AdminLayout'
 import { Package, Pencil, Trash2, Plus, Loader2 } from 'lucide-react'
 
 const EMPTY_FORM = {
-  name: '', description: '', price: '', stock: '', category: '', images: [], is_active: true,
+  name: '', description: '', price: '', compare_price: '', stock: '', category: '', images: [], is_active: true,
   quantity_offers: { enabled: false, tiers: [] },
 }
 
@@ -39,7 +39,7 @@ export default function Products() {
   const openEdit = (p) => {
     setForm({
       name: p.name, description: p.description || '',
-      price: p.price, stock: p.stock, category: p.category || '',
+      price: p.price, compare_price: p.compare_price || '', stock: p.stock, category: p.category || '',
       images: p.images?.length > 0 ? p.images : p.image_url ? [p.image_url] : [],
       is_active: p.is_active,
       quantity_offers: p.quantity_offers || { enabled: false, tiers: [] },
@@ -103,7 +103,9 @@ export default function Products() {
     const images  = form.images || []
     const payload = {
       name: form.name, description: form.description, category: form.category, is_active: form.is_active,
-      price: Number(form.price), stock: Number(form.stock),
+      price: Number(form.price),
+      compare_price: form.compare_price ? Number(form.compare_price) : null,
+      stock: Number(form.stock),
       images,
       image_url: images[0] || '',
       quantity_offers: form.quantity_offers?.enabled ? form.quantity_offers : null,
@@ -167,7 +169,12 @@ export default function Products() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-800 truncate">{p.name}</p>
                     <p className="text-xs text-gray-400">{p.category || '—'}</p>
-                    <p className="text-sm font-semibold mt-0.5">{Number(p.price).toLocaleString('fr-DZ')} DA</p>
+                    <p className="text-sm font-semibold mt-0.5">
+                      {Number(p.price).toLocaleString('fr-DZ')} DA
+                      {p.compare_price > p.price && (
+                        <span className="text-xs text-gray-400 line-through ml-1.5">{Number(p.compare_price).toLocaleString('fr-DZ')} DA</span>
+                      )}
+                    </p>
                   </div>
                   <div className="flex flex-col items-end gap-2 shrink-0">
                     <button
@@ -221,7 +228,12 @@ export default function Products() {
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-800">{p.name}</td>
                     <td className="px-4 py-3 text-gray-500">{p.category || '—'}</td>
-                    <td className="px-4 py-3 font-semibold">{Number(p.price).toLocaleString('fr-DZ')} DA</td>
+                    <td className="px-4 py-3">
+                      <span className="font-semibold">{Number(p.price).toLocaleString('fr-DZ')} DA</span>
+                      {p.compare_price > p.price && (
+                        <span className="block text-xs text-gray-400 line-through">{Number(p.compare_price).toLocaleString('fr-DZ')} DA</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`font-medium ${p.stock === 0 ? 'text-red-500' : 'text-gray-700'}`}>{p.stock}</span>
                     </td>
@@ -327,22 +339,47 @@ export default function Products() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {[
-                  { name: 'price', label: 'Prix (DA)', type: 'number', min: 0, required: true },
-                  { name: 'stock', label: 'Stock',     type: 'number', min: 0, required: true },
-                ].map(({ name, label, type, min, required }) => (
-                  <div key={name}>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
-                    <input
-                      type={type}
-                      min={min}
-                      required={required}
-                      value={form[name]}
-                      onChange={(e) => setForm((f) => ({ ...f, [name]: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none"
-                    />
-                  </div>
-                ))}
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Prix actuel (DA)</label>
+                  <input
+                    type="number" min="0" required
+                    value={form.price}
+                    onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Ancien prix (DA)
+                    <span className="text-gray-400 font-normal ml-1 text-xs">optionnel — promo</span>
+                  </label>
+                  <input
+                    type="number" min="0"
+                    value={form.compare_price}
+                    onChange={(e) => setForm((f) => ({ ...f, compare_price: e.target.value }))}
+                    placeholder="Ex : 2500"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none"
+                  />
+                </div>
+              </div>
+              {form.compare_price && Number(form.compare_price) > Number(form.price) && (
+                <p className="text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg -mt-2">
+                  ✓ Réduction de {Math.round((1 - Number(form.price) / Number(form.compare_price)) * 100)}% — l'ancien prix sera affiché barré sur la boutique
+                </p>
+              )}
+              {form.compare_price && Number(form.compare_price) <= Number(form.price) && (
+                <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg -mt-2">
+                  ⚠ L'ancien prix doit être supérieur au prix actuel
+                </p>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Stock</label>
+                <input
+                  type="number" min="0" required
+                  value={form.stock}
+                  onChange={(e) => setForm((f) => ({ ...f, stock: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none"
+                />
               </div>
 
               <div className="flex items-center gap-3">
