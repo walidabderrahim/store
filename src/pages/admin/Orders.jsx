@@ -3,30 +3,34 @@ import { supabase, STORE_ID } from '../../lib/supabase'
 import AdminLayout from '../../components/AdminLayout'
 import { ChevronRight, ShoppingCart } from 'lucide-react'
 import OrderRow from '../../components/OrderRow'
-
-const STATUS_FILTERS = [
-  { value: 'all',       label: 'Toutes' },
-  { value: 'pending',   label: 'En attente' },
-  { value: 'confirmed', label: 'Confirmées' },
-  { value: 'shipped',   label: 'Expédiées' },
-  { value: 'delivered', label: 'Livrées' },
-  { value: 'cancelled', label: 'Annulées' },
-]
-
-const STATUS_LABELS = {
-  pending:   { label: 'En attente',  classes: 'bg-yellow-100 text-yellow-700' },
-  confirmed: { label: 'Confirmée',   classes: 'bg-blue-100 text-blue-700' },
-  shipped:   { label: 'Expédiée',    classes: 'bg-purple-100 text-purple-700' },
-  delivered: { label: 'Livrée',      classes: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'Annulée',     classes: 'bg-red-100 text-red-700' },
-}
+import { useLang } from '../../contexts/LangContext'
 
 export default function Orders() {
+  const { lang, t } = useLang()
   const [orders, setOrders]         = useState([])
   const [loading, setLoading]       = useState(true)
   const [activeFilter, setFilter]   = useState('all')
   const [selected, setSelected]     = useState(null)
   const [orderItems, setOrderItems] = useState([])
+
+  const STATUS_FILTERS = [
+    { value: 'all',       label: t('Toutes',      'الكل') },
+    { value: 'new',       label: t('Nouveau',     'جديد') },
+    { value: 'pending',   label: t('En attente',  'قيد الانتظار') },
+    { value: 'confirmed', label: t('Confirmées',  'مؤكدة') },
+    { value: 'shipped',   label: t('Expédiées',   'مشحونة') },
+    { value: 'delivered', label: t('Livrées',     'تم التوصيل') },
+    { value: 'cancelled', label: t('Annulées',    'ملغاة') },
+  ]
+
+  const STATUS_LABELS = {
+    new:       { label: t('Nouveau',    'جديد'),          classes: 'bg-gray-100 text-gray-600' },
+    pending:   { label: t('En attente', 'قيد الانتظار'), classes: 'bg-yellow-100 text-yellow-700' },
+    confirmed: { label: t('Confirmée',  'مؤكدة'),         classes: 'bg-blue-100 text-blue-700' },
+    shipped:   { label: t('Expédiée',   'مشحونة'),        classes: 'bg-purple-100 text-purple-700' },
+    delivered: { label: t('Livrée',     'تم التوصيل'),    classes: 'bg-green-100 text-green-700' },
+    cancelled: { label: t('Annulée',    'ملغاة'),         classes: 'bg-red-100 text-red-700' },
+  }
 
   const fetchOrders = async () => {
     let q = supabase
@@ -59,8 +63,8 @@ export default function Orders() {
 
   return (
     <AdminLayout>
-      <div className="p-4 md:p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-5">Commandes</h1>
+      <div className="p-4 md:p-8" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <h1 className="text-2xl font-bold text-gray-900 mb-5">{t('Commandes', 'الطلبات')}</h1>
 
         {/* Filters */}
         <div className="flex gap-2 flex-nowrap overflow-x-auto pb-1 mb-5 scrollbar-hide">
@@ -86,11 +90,11 @@ export default function Orders() {
         ) : orders.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <ShoppingCart size={40} className="mx-auto mb-4 text-gray-200" />
-            <p>Aucune commande</p>
+            <p>{t('Aucune commande', 'لا توجد طلبات')}</p>
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-sm">
-            {/* Mobile: card list */}
+            {/* Mobile */}
             <div className="md:hidden divide-y">
               {orders.map((o) => (
                 <div
@@ -117,17 +121,17 @@ export default function Orders() {
               ))}
             </div>
 
-            {/* Desktop: table */}
+            {/* Desktop */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full min-w-[640px]">
                 <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
                   <tr>
-                    <th className="px-4 py-3 text-left">Date</th>
-                    <th className="px-4 py-3 text-left">Client</th>
-                    <th className="px-4 py-3 text-left">Wilaya</th>
-                    <th className="px-4 py-3 text-left">Total</th>
-                    <th className="px-4 py-3 text-left">Statut</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
+                    <th className="px-4 py-3 text-left">{t('Date',    'التاريخ')}</th>
+                    <th className="px-4 py-3 text-left">{t('Client',  'العميل')}</th>
+                    <th className="px-4 py-3 text-left">{t('Wilaya',  'الولاية')}</th>
+                    <th className="px-4 py-3 text-left">{t('Total',   'الإجمالي')}</th>
+                    <th className="px-4 py-3 text-left">{t('Statut',  'الحالة')}</th>
+                    <th className="px-4 py-3 text-right">{t('Actions', 'إجراءات')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -135,8 +139,10 @@ export default function Orders() {
                     <OrderRow
                       key={o.id}
                       order={o}
+                      statusLabels={STATUS_LABELS}
                       onStatusChange={handleStatusChange}
                       onClick={handleOpenDetail}
+                      t={t}
                     />
                   ))}
                 </tbody>
@@ -149,9 +155,9 @@ export default function Orders() {
       {/* Order detail modal */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <div className="flex items-center justify-between p-5 border-b">
-              <h2 className="font-bold text-gray-900">Détail commande</h2>
+              <h2 className="font-bold text-gray-900">{t('Détail commande', 'تفاصيل الطلب')}</h2>
               <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
 
@@ -166,17 +172,17 @@ export default function Orders() {
               </div>
 
               <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
-                <p><span className="font-medium text-gray-500">Nom :</span> {selected.customer_name}</p>
-                <p><span className="font-medium text-gray-500">Téléphone :</span> {selected.customer_phone}</p>
-                <p><span className="font-medium text-gray-500">Wilaya :</span> {selected.customer_wilaya}</p>
-                <p><span className="font-medium text-gray-500">Adresse :</span> {selected.customer_address}</p>
+                <p><span className="font-medium text-gray-500">{t('Nom', 'الاسم')} :</span> {selected.customer_name}</p>
+                <p><span className="font-medium text-gray-500">{t('Téléphone', 'الهاتف')} :</span> {selected.customer_phone}</p>
+                <p><span className="font-medium text-gray-500">{t('Wilaya', 'الولاية')} :</span> {selected.customer_wilaya}</p>
+                <p><span className="font-medium text-gray-500">{t('Adresse', 'العنوان')} :</span> {selected.customer_address}</p>
                 {selected.notes && (
-                  <p><span className="font-medium text-gray-500">Notes :</span> {selected.notes}</p>
+                  <p><span className="font-medium text-gray-500">{t('Notes', 'ملاحظات')} :</span> {selected.notes}</p>
                 )}
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-3">Produits commandés</p>
+                <p className="text-sm font-semibold text-gray-700 mb-3">{t('Produits commandés', 'المنتجات المطلوبة')}</p>
                 <div className="space-y-3">
                   {orderItems.map((item) => (
                     <div key={item.id} className="flex items-center gap-3">
@@ -202,33 +208,33 @@ export default function Orders() {
               </div>
 
               <div className="flex justify-between font-bold text-lg border-t pt-4">
-                <span>Total</span>
+                <span>{t('Total', 'الإجمالي')}</span>
                 <span>{Number(selected.total).toLocaleString('fr-DZ')} DA</span>
               </div>
 
               <div className="flex gap-2 flex-wrap">
-                {selected.status === 'pending' && (
+                {(selected.status === 'new' || selected.status === 'pending') && (
                   <button onClick={() => handleStatusChange(selected.id, 'confirmed')}
                     className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700">
-                    Confirmer
+                    {t('Confirmer', 'تأكيد')}
                   </button>
                 )}
                 {selected.status === 'confirmed' && (
                   <button onClick={() => handleStatusChange(selected.id, 'shipped')}
                     className="flex-1 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-medium hover:bg-purple-700">
-                    Marquer expédiée
+                    {t('Marquer expédiée', 'تم الشحن')}
                   </button>
                 )}
                 {selected.status === 'shipped' && (
                   <button onClick={() => handleStatusChange(selected.id, 'delivered')}
                     className="flex-1 py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700">
-                    Marquer livrée
+                    {t('Marquer livrée', 'تم التوصيل')}
                   </button>
                 )}
                 {!['delivered', 'cancelled'].includes(selected.status) && (
                   <button onClick={() => handleStatusChange(selected.id, 'cancelled')}
                     className="flex-1 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100">
-                    Annuler
+                    {t('Annuler', 'إلغاء')}
                   </button>
                 )}
               </div>

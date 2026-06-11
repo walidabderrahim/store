@@ -3,8 +3,10 @@ import { supabase, STORE_ID } from '../../lib/supabase'
 import AdminLayout from '../../components/AdminLayout'
 import { Home, Building2, Search } from 'lucide-react'
 import { WILAYA_NAMES } from '../../data/wilayas'
+import { useLang } from '../../contexts/LangContext'
 
 export default function Settings() {
+  const { lang, t } = useLang()
   const [form, setForm] = useState({
     store_name: '',
     logo_url: '',
@@ -88,17 +90,17 @@ export default function Settings() {
 
   return (
     <AdminLayout>
-      <div className="p-4 md:p-8 max-w-2xl">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Paramètres de la boutique</h1>
+      <div className="p-4 md:p-8 max-w-2xl" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('Paramètres de la boutique', 'إعدادات المتجر')}</h1>
 
         <form onSubmit={handleSave} className="space-y-6">
 
           {/* Identité visuelle */}
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-            <h2 className="font-semibold text-gray-700">Identité visuelle</h2>
+            <h2 className="font-semibold text-gray-700">{t('Identité visuelle', 'الهوية البصرية')}</h2>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Logo</label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">{t('Logo', 'الشعار')}</label>
               <div className="flex items-center gap-4">
                 {form.logo_url ? (
                   <img src={form.logo_url} alt="logo" className="w-16 h-16 rounded-xl object-contain bg-gray-50 border" />
@@ -111,14 +113,14 @@ export default function Settings() {
                   disabled={logoUploading}
                   className="text-sm bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl disabled:opacity-60"
                 >
-                  {logoUploading ? 'Upload…' : 'Changer le logo'}
+                  {logoUploading ? t('Upload…', 'جارٍ الرفع…') : t('Changer le logo', 'تغيير الشعار')}
                 </button>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Nom de la boutique</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('Nom de la boutique', 'اسم المتجر')}</label>
               <input
                 type="text"
                 required
@@ -129,7 +131,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Couleur principale</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('Couleur principale', 'اللون الرئيسي')}</label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -145,11 +147,11 @@ export default function Settings() {
 
           {/* Contact */}
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-            <h2 className="font-semibold text-gray-700">Contact</h2>
+            <h2 className="font-semibold text-gray-700">{t('Contact', 'التواصل')}</h2>
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Numéro WhatsApp
+                {t('Numéro WhatsApp', 'رقم واتساب')}
                 <span className="text-gray-400 font-normal ml-1">(format : 213XXXXXXXXX)</span>
               </label>
               <input
@@ -162,7 +164,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Texte de livraison</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1">{t('Texte de livraison', 'نص التوصيل')}</label>
               <input
                 type="text"
                 value={form.delivery_text}
@@ -175,17 +177,17 @@ export default function Settings() {
 
           {/* Prix de livraison */}
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
-            <h2 className="font-semibold text-gray-700">Prix de livraison</h2>
+            <h2 className="font-semibold text-gray-700">{t('Prix de livraison', 'أسعار التوصيل')}</h2>
 
             {/* Tarifs par défaut */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Tarifs par défaut</p>
-              <p className="text-xs text-gray-400">Appliqués aux wilayas sans prix spécifique</p>
+              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{t('Tarifs par défaut', 'الأسعار الافتراضية')}</p>
+              <p className="text-xs text-gray-400">{t('Appliqués aux wilayas sans prix spécifique', 'تُطبَّق على الولايات التي لا تحمل سعراً خاصاً')}</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 mb-1.5">
                     <Home size={12} />
-                    À domicile (DA)
+                    {t('À domicile (DA)', 'للمنزل (دج)')}
                   </label>
                   <input
                     type="number"
@@ -198,7 +200,7 @@ export default function Settings() {
                 <div>
                   <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 mb-1.5">
                     <Building2 size={12} />
-                    Bureau de livraison (DA)
+                    {t('Bureau de livraison (DA)', 'مكتب التوصيل (دج)')}
                   </label>
                   <input
                     type="number"
@@ -214,8 +216,8 @@ export default function Settings() {
             {/* Prix par wilaya */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-gray-700">Prix par wilaya</p>
-                <p className="text-xs text-gray-400">Vide = tarif par défaut</p>
+                <p className="text-sm font-medium text-gray-700">{t('Prix par wilaya', 'السعر حسب الولاية')}</p>
+                <p className="text-xs text-gray-400">{t('Vide = tarif par défaut', 'فارغ = السعر الافتراضي')}</p>
               </div>
 
               <div className="relative mb-3">
@@ -224,7 +226,7 @@ export default function Settings() {
                   type="text"
                   value={wilayaSearch}
                   onChange={(e) => setWilayaSearch(e.target.value)}
-                  placeholder="Rechercher une wilaya…"
+                  placeholder={t('Rechercher une wilaya…', 'ابحث عن ولاية…')}
                   className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-800"
                 />
               </div>
@@ -276,7 +278,7 @@ export default function Settings() {
 
               {Object.keys(wilayaPrices).length > 0 && (
                 <p className="text-xs text-violet-600 mt-2">
-                  {Object.keys(wilayaPrices).length} wilaya(s) avec prix spéciaux
+                  {t(`${Object.keys(wilayaPrices).length} wilaya(s) avec prix spéciaux`, `${Object.keys(wilayaPrices).length} ولاية بأسعار خاصة`)}
                 </p>
               )}
             </div>
@@ -286,7 +288,7 @@ export default function Settings() {
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-3">
             <h2 className="font-semibold text-gray-700">TikTok Pixel</h2>
             <p className="text-sm text-gray-400">
-              Copiez votre Pixel ID depuis TikTok Ads Manager → Assets → Events.
+              {t('Copiez votre Pixel ID depuis TikTok Ads Manager → Assets → Events.', 'انسخ Pixel ID من TikTok Ads Manager ← Assets ← Events.')}
             </p>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">Pixel ID</label>
@@ -300,7 +302,7 @@ export default function Settings() {
             </div>
             {form.tiktok_pixel_id && (
               <p className="text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg">
-                ✓ TikTok Pixel actif — PageView, ViewContent, AddToCart, PlaceAnOrder seront trackés.
+                ✓ {t('TikTok Pixel actif — PageView, ViewContent, AddToCart, PlaceAnOrder seront trackés.', 'TikTok Pixel نشط — سيتم تتبع PageView, ViewContent, AddToCart, PlaceAnOrder.')}
               </p>
             )}
           </div>
@@ -309,8 +311,7 @@ export default function Settings() {
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-3">
             <h2 className="font-semibold text-gray-700">Meta Pixel</h2>
             <p className="text-sm text-gray-400">
-              Copiez votre Pixel ID depuis le Gestionnaire d'événements Meta Business.
-              Il sera automatiquement injecté sur votre boutique.
+              {t("Copiez votre Pixel ID depuis le Gestionnaire d'événements Meta Business. Il sera automatiquement injecté sur votre boutique.", 'انسخ Pixel ID من Meta Business → مدير الأحداث. سيتم تفعيله تلقائياً على متجرك.')}
             </p>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">Pixel ID</label>
@@ -324,7 +325,7 @@ export default function Settings() {
             </div>
             {form.pixel_id && (
               <p className="text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg">
-                ✓ Pixel actif — PageView, AddToCart, InitiateCheckout, Purchase seront trackés.
+                ✓ {t('Pixel actif — PageView, AddToCart, InitiateCheckout, Purchase seront trackés.', 'Pixel نشط — سيتم تتبع PageView, AddToCart, InitiateCheckout, Purchase.')}
               </p>
             )}
           </div>
@@ -335,10 +336,10 @@ export default function Settings() {
               disabled={saving}
               className="px-8 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 disabled:opacity-60 transition-colors"
             >
-              {saving ? 'Enregistrement…' : 'Sauvegarder'}
+              {saving ? t('Enregistrement…', 'جارٍ الحفظ…') : t('Sauvegarder', 'حفظ')}
             </button>
             {saved && (
-              <p className="text-green-600 text-sm font-medium">✓ Paramètres sauvegardés</p>
+              <p className="text-green-600 text-sm font-medium">✓ {t('Paramètres sauvegardés', 'تم حفظ الإعدادات')}</p>
             )}
           </div>
         </form>

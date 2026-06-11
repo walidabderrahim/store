@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase, STORE_ID } from '../../lib/supabase'
 import AdminLayout from '../../components/AdminLayout'
 import { Package, Pencil, Trash2, Plus, Loader2 } from 'lucide-react'
+import { useLang } from '../../contexts/LangContext'
 
 const EMPTY_FORM = {
   name: '', description: '', price: '', compare_price: '', stock: '', category: '', images: [], is_active: true,
@@ -10,6 +11,7 @@ const EMPTY_FORM = {
 }
 
 export default function Products() {
+  const { lang, t } = useLang()
   const [products, setProducts]     = useState([])
   const [loading, setLoading]       = useState(true)
   const [showModal, setShowModal]   = useState(false)
@@ -175,14 +177,14 @@ export default function Products() {
 
   return (
     <AdminLayout>
-      <div className="p-4 md:p-8">
+      <div className="p-4 md:p-8" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-2xl font-bold text-gray-900">Produits</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('Produits', 'المنتجات')}</h1>
           <button
             onClick={openNew}
             className="bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800"
           >
-            + Ajouter
+            {t('+ Ajouter', '+ إضافة')}
           </button>
         </div>
 
@@ -193,7 +195,7 @@ export default function Products() {
         ) : products.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <Package size={40} className="mx-auto mb-4 text-gray-200" />
-            <p>Aucun produit. Commencez par en ajouter un !</p>
+            <p>{t('Aucun produit. Commencez par en ajouter un !', 'لا توجد منتجات. أضف منتجاً الآن!')}</p>
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -224,7 +226,7 @@ export default function Products() {
                         p.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                       }`}
                     >
-                      {p.is_active ? 'Actif' : 'Inactif'}
+                      {p.is_active ? t('Actif', 'نشط') : t('Inactif', 'غير نشط')}
                     </button>
                     <div className="flex gap-1.5">
                       <button
@@ -249,13 +251,13 @@ export default function Products() {
             <table className="hidden md:table w-full">
               <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
                 <tr>
-                  <th className="px-4 py-3 text-left">Photo</th>
-                  <th className="px-4 py-3 text-left">Nom</th>
-                  <th className="px-4 py-3 text-left">Catégorie</th>
-                  <th className="px-4 py-3 text-left">Prix</th>
-                  <th className="px-4 py-3 text-left">Stock</th>
-                  <th className="px-4 py-3 text-left">Statut</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3 text-left">{t('Photo',    'الصورة')}</th>
+                  <th className="px-4 py-3 text-left">{t('Nom',      'الاسم')}</th>
+                  <th className="px-4 py-3 text-left">{t('Catégorie','التصنيف')}</th>
+                  <th className="px-4 py-3 text-left">{t('Prix',     'السعر')}</th>
+                  <th className="px-4 py-3 text-left">{t('Stock',    'المخزون')}</th>
+                  <th className="px-4 py-3 text-left">{t('Statut',   'الحالة')}</th>
+                  <th className="px-4 py-3 text-right">{t('Actions', 'إجراءات')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -285,15 +287,15 @@ export default function Products() {
                           p.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                         }`}
                       >
-                        {p.is_active ? 'Actif' : 'Inactif'}
+                        {p.is_active ? t('Actif', 'نشط') : t('Inactif', 'غير نشط')}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right space-x-2">
                       <button onClick={() => openEdit(p)} className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100">
-                        Modifier
+                        {t('Modifier', 'تعديل')}
                       </button>
                       <button onClick={() => handleDelete(p.id)} className="text-xs bg-red-50 text-red-500 px-3 py-1 rounded-lg hover:bg-red-100">
-                        Supprimer
+                        {t('Supprimer', 'حذف')}
                       </button>
                     </td>
                   </tr>
@@ -307,17 +309,17 @@ export default function Products() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <div className="flex items-center justify-between p-5 border-b">
-              <h2 className="font-bold text-gray-900">{editId ? 'Modifier le produit' : 'Nouveau produit'}</h2>
+              <h2 className="font-bold text-gray-900">{editId ? t('Modifier le produit', 'تعديل المنتج') : t('Nouveau produit', 'منتج جديد')}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
 
             <form onSubmit={handleSave} className="p-5 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Photos
-                  <span className="text-gray-400 font-normal ml-1">(vous pouvez en ajouter plusieurs)</span>
+                  {t('Photos', 'الصور')}
+                  <span className="text-gray-400 font-normal ml-1">({t('vous pouvez en ajouter plusieurs', 'يمكنك إضافة عدة صور')})</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {(form.images || []).map((url, idx) => (
@@ -332,7 +334,7 @@ export default function Products() {
                       </button>
                       {idx === 0 && (
                         <span className="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-black/50 text-white rounded-b-xl py-0.5">
-                          Principale
+                          {t('Principale', 'رئيسية')}
                         </span>
                       )}
                     </div>
@@ -347,15 +349,15 @@ export default function Products() {
                       ? <Loader2 size={18} className="animate-spin text-gray-400" />
                       : <Plus size={18} className="text-gray-400" />
                     }
-                    {!imgUploading && <span className="text-[10px] text-gray-400">Ajouter</span>}
+                    {!imgUploading && <span className="text-[10px] text-gray-400">{t('Ajouter', 'إضافة')}</span>}
                   </button>
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
               </div>
 
               {[
-                { name: 'name',     label: 'Nom du produit', required: true },
-                { name: 'category', label: 'Catégorie' },
+                { name: 'name',     label: t('Nom du produit', 'اسم المنتج'), required: true },
+                { name: 'category', label: t('Catégorie', 'التصنيف') },
               ].map(({ name, label, required }) => (
                 <div key={name}>
                   <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
@@ -370,7 +372,7 @@ export default function Products() {
               ))}
 
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-600 mb-1">{t('Description', 'الوصف')}</label>
                 <textarea
                   rows={3}
                   value={form.description}
@@ -381,7 +383,7 @@ export default function Products() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Prix actuel (DA)</label>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">{t('Prix actuel (DA)', 'السعر الحالي (دج)')}</label>
                   <input
                     type="number" min="0" required
                     value={form.price}
@@ -391,8 +393,8 @@ export default function Products() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Ancien prix (DA)
-                    <span className="text-gray-400 font-normal ml-1 text-xs">optionnel — promo</span>
+                    {t('Ancien prix (DA)', 'السعر القديم (دج)')}
+                    <span className="text-gray-400 font-normal ml-1 text-xs">{t('optionnel — promo', 'اختياري — تخفيض')}</span>
                   </label>
                   <input
                     type="number" min="0"
@@ -405,16 +407,16 @@ export default function Products() {
               </div>
               {form.compare_price && Number(form.compare_price) > Number(form.price) && (
                 <p className="text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg -mt-2">
-                  ✓ Réduction de {Math.round((1 - Number(form.price) / Number(form.compare_price)) * 100)}% — l'ancien prix sera affiché barré sur la boutique
+                  ✓ {t(`Réduction de ${Math.round((1 - Number(form.price) / Number(form.compare_price)) * 100)}% — l'ancien prix sera affiché barré`, `تخفيض ${Math.round((1 - Number(form.price) / Number(form.compare_price)) * 100)}% — سيُعرض السعر القديم مشطوباً`)}
                 </p>
               )}
               {form.compare_price && Number(form.compare_price) <= Number(form.price) && (
                 <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg -mt-2">
-                  ⚠ L'ancien prix doit être supérieur au prix actuel
+                  ⚠ {t("L'ancien prix doit être supérieur au prix actuel", 'يجب أن يكون السعر القديم أكبر من السعر الحالي')}
                 </p>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Stock</label>
+                <label className="block text-sm font-medium text-gray-600 mb-1">{t('Stock', 'المخزون')}</label>
                 <input
                   type="number" min="0" required
                   value={form.stock}
@@ -431,15 +433,15 @@ export default function Products() {
                   onChange={(e) => setForm((f) => ({ ...f, is_active: e.target.checked }))}
                   className="w-4 h-4"
                 />
-                <label htmlFor="is_active" className="text-sm text-gray-700">Produit visible sur la boutique</label>
+                <label htmlFor="is_active" className="text-sm text-gray-700">{t('Produit visible sur la boutique', 'المنتج مرئي في المتجر')}</label>
               </div>
 
               {/* Offres par quantité */}
               <div className="border-t pt-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Offres par quantité</p>
-                    <p className="text-xs text-gray-400">Ex : 1 pièce = 1000 DA, 2 pièces = 1700 DA</p>
+                    <p className="text-sm font-medium text-gray-700">{t('Offres par quantité', 'عروض الكمية')}</p>
+                    <p className="text-xs text-gray-400">{t('Ex : 1 pièce = 1000 DA, 2 pièces = 1700 DA', 'مثال: 1 قطعة = 1000 دج، 2 قطع = 1700 دج')}</p>
                   </div>
                   <button
                     type="button"
@@ -491,7 +493,7 @@ export default function Products() {
                       onClick={addTier}
                       className="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
                     >
-                      + Ajouter une offre
+                      {t('+ Ajouter une offre', '+ إضافة عرض')}
                     </button>
                   </div>
                 )}
@@ -500,13 +502,13 @@ export default function Products() {
               {/* Variantes */}
               <div className="border-t pt-3 space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Variantes du produit</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Laissez vide si le produit n'a pas de variantes (ex: taille unique)</p>
+                  <p className="text-sm font-medium text-gray-700">{t('Variantes du produit', 'متغيرات المنتج')}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{t("Laissez vide si le produit n'a pas de variantes", 'اتركه فارغاً إذا لم يكن للمنتج متغيرات')}</p>
                 </div>
 
                 {/* Couleurs */}
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Couleurs</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('Couleurs', 'الألوان')}</p>
                   {(form.variants?.colors || []).map((c, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <input
@@ -519,7 +521,7 @@ export default function Products() {
                         type="text"
                         value={c.name}
                         onChange={(e) => updateColor(idx, 'name', e.target.value)}
-                        placeholder="Nom (ex: Rouge, Bleu…)"
+                        placeholder={t('Nom (ex: Rouge, Bleu…)', 'الاسم (مثال: أحمر، أزرق…)')}
                         className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
                       />
                       <button
@@ -534,13 +536,13 @@ export default function Products() {
                     onClick={addColor}
                     className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
                   >
-                    <Plus size={14} /> Ajouter une couleur
+                    <Plus size={14} /> {t('Ajouter une couleur', 'إضافة لون')}
                   </button>
                 </div>
 
                 {/* Tailles */}
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tailles</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('Tailles', 'المقاسات')}</p>
                   {(form.variants?.sizes || []).length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {form.variants.sizes.map((s, idx) => (
@@ -561,14 +563,14 @@ export default function Products() {
                       value={sizeInput}
                       onChange={(e) => setSizeInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSize() } }}
-                      placeholder="Ex: S, M, L, XL, 38, 40…"
+                      placeholder={t('Ex: S, M, L, XL, 38, 40…', 'مثال: S, M, L, XL, 38, 40…')}
                       className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
                     />
                     <button
                       type="button"
                       onClick={addSize}
                       className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium"
-                    >Ajouter</button>
+                    >{t('Ajouter', 'إضافة')}</button>
                   </div>
                 </div>
               </div>
@@ -579,14 +581,14 @@ export default function Products() {
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50"
                 >
-                  Annuler
+                  {t('Annuler', 'إلغاء')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="flex-1 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60"
                 >
-                  {saving ? 'Enregistrement…' : 'Enregistrer'}
+                  {saving ? t('Enregistrement…', 'جارٍ الحفظ…') : t('Enregistrer', 'حفظ')}
                 </button>
               </div>
             </form>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
+import { LangProvider } from './contexts/LangContext'
 
 import StoreFront    from './pages/StoreFront'
 import ProductDetail from './pages/ProductDetail'
@@ -29,6 +30,7 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
+    <LangProvider>
     <BrowserRouter>
       <Routes>
         {/* Public storefront */}
@@ -49,5 +51,6 @@ export default function App() {
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
+    </LangProvider>
   )
 }

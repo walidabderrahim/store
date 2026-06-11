@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { supabase, STORE_ID } from '../../lib/supabase'
 import AdminLayout from '../../components/AdminLayout'
 import { PhoneOff, Phone, Trash2, CheckCircle, RefreshCw } from 'lucide-react'
+import { useLang } from '../../contexts/LangContext'
 
 export default function AbandonedOrders() {
+  const { lang, t } = useLang()
   const [orders, setOrders]   = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -40,12 +42,15 @@ export default function AbandonedOrders() {
 
   return (
     <AdminLayout>
-      <div className="p-4 md:p-8">
+      <div className="p-4 md:p-8" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Commandes abandonnées</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('Commandes abandonnées', 'الطلبات المهجورة')}</h1>
             <p className="text-sm text-gray-400 mt-1">
-              Clients qui ont saisi leur numéro mais n'ont pas confirmé la commande
+              {t(
+                "Clients qui ont saisi leur numéro mais n'ont pas confirmé la commande",
+                'عملاء أدخلوا رقمهم لكن لم يتموا الطلب'
+              )}
             </p>
           </div>
           <button
@@ -63,18 +68,17 @@ export default function AbandonedOrders() {
         ) : pending.length === 0 && recovered.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             <PhoneOff size={40} className="mx-auto mb-4 text-gray-200" />
-            <p>Aucune commande abandonnée pour le moment.</p>
+            <p>{t('Aucune commande abandonnée pour le moment.', 'لا توجد طلبات مهجورة حتى الآن.')}</p>
           </div>
         ) : (
           <div className="space-y-6">
 
-            {/* En attente de rappel */}
             {pending.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
                   <p className="text-sm font-semibold text-gray-700">
-                    À rappeler
+                    {t('À rappeler', 'للمتابعة')}
                     <span className="ml-2 bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">
                       {pending.length}
                     </span>
@@ -89,7 +93,7 @@ export default function AbandonedOrders() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-gray-800 text-sm">
-                            {o.customer_name || <span className="text-gray-400 font-normal">Nom inconnu</span>}
+                            {o.customer_name || <span className="text-gray-400 font-normal">{t('Nom inconnu', 'اسم غير معروف')}</span>}
                           </p>
                           <a
                             href={`tel:${o.customer_phone}`}
@@ -98,7 +102,7 @@ export default function AbandonedOrders() {
                             {o.customer_phone}
                           </a>
                           {o.product_name && (
-                            <p className="text-xs text-gray-400 truncate mt-0.5">Produit : {o.product_name}</p>
+                            <p className="text-xs text-gray-400 truncate mt-0.5">{t('Produit', 'المنتج')} : {o.product_name}</p>
                           )}
                           <p className="text-xs text-gray-300 mt-0.5">{formatDate(o.created_at)}</p>
                         </div>
@@ -107,19 +111,19 @@ export default function AbandonedOrders() {
                             href={`tel:${o.customer_phone}`}
                             className="flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition"
                           >
-                            <Phone size={12} /> Appeler
+                            <Phone size={12} /> {t('Appeler', 'اتصال')}
                           </a>
                           <div className="flex gap-1.5">
                             <button
                               onClick={() => markRecovered(o.id)}
-                              title="Marquer comme récupéré"
+                              title={t('Marquer comme récupéré', 'تم الاسترداد')}
                               className="p-1.5 bg-green-50 text-green-600 rounded-lg hover:bg-green-100"
                             >
                               <CheckCircle size={14} />
                             </button>
                             <button
                               onClick={() => remove(o.id)}
-                              title="Supprimer"
+                              title={t('Supprimer', 'حذف')}
                               className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100"
                             >
                               <Trash2 size={14} />
@@ -133,13 +137,12 @@ export default function AbandonedOrders() {
               </div>
             )}
 
-            {/* Récupérés */}
             {recovered.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
                   <p className="text-sm font-semibold text-gray-700">
-                    Récupérés
+                    {t('Récupérés', 'تم الاسترداد')}
                     <span className="ml-2 bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
                       {recovered.length}
                     </span>
@@ -154,7 +157,7 @@ export default function AbandonedOrders() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-gray-800 text-sm line-through">
-                            {o.customer_name || 'Nom inconnu'}
+                            {o.customer_name || t('Nom inconnu', 'اسم غير معروف')}
                           </p>
                           <p className="font-mono text-sm text-gray-500">{o.customer_phone}</p>
                           {o.product_name && (
