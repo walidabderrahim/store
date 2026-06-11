@@ -8,7 +8,7 @@ const NAV = [
   { to: '/admin/dashboard', Icon: LayoutDashboard, fr: 'Tableau de bord', ar: 'لوحة التحكم',  short_fr: 'Accueil',   short_ar: 'الرئيسية' },
   { to: '/admin/products',  Icon: Package,          fr: 'Produits',        ar: 'المنتجات',      short_fr: 'Produits',  short_ar: 'المنتجات' },
   { to: '/admin/orders',    Icon: ShoppingCart,     fr: 'Commandes',       ar: 'الطلبات',       short_fr: 'Commandes', short_ar: 'الطلبات'  },
-  { to: '/admin/abandoned', Icon: PhoneOff,         fr: 'Abandonnées',     ar: 'المهجورة',      short_fr: 'Abandon',   short_ar: 'المهجورة' },
+  { to: '/admin/abandoned', Icon: PhoneOff,         fr: 'Abandonnées',     ar: 'المتروكة',      short_fr: 'Abandon',   short_ar: 'المتروكة' },
   { to: '/admin/settings',  Icon: Settings,         fr: 'Paramètres',      ar: 'الإعدادات',     short_fr: 'Réglages',  short_ar: 'الإعدادات'},
 ]
 

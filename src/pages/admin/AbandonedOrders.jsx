@@ -45,7 +45,7 @@ export default function AbandonedOrders() {
       <div className="p-4 md:p-8" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t('Commandes abandonnées', 'الطلبات المهجورة')}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('Commandes abandonnées', 'الطلبات المتروكة')}</h1>
             <p className="text-sm text-gray-400 mt-1">
               {t(
                 "Clients qui ont saisi leur numéro mais n'ont pas confirmé la commande",
