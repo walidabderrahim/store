@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase, STORE_ID } from '../lib/supabase'
 import { useStore } from '../hooks/useStore'
 import { usePixel } from '../hooks/usePixel'
+import { useTikTokPixel } from '../hooks/useTikTokPixel'
 
 const WILAYAS = [
   'Adrar','Chlef','Laghouat','Oum El Bouaghi','Batna','Béjaïa','Biskra','Béchar',
@@ -21,7 +22,8 @@ import { useLocation } from 'react-router-dom'
 
 export default function Checkout() {
   const { store } = useStore()
-  const { track } = usePixel(store?.pixel_id)
+  const { track }   = usePixel(store?.pixel_id)
+  const { track: trackTT } = useTikTokPixel(store?.tiktok_pixel_id)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -57,6 +59,7 @@ export default function Checkout() {
     setError('')
 
     track('InitiateCheckout', { value: cartTotal, currency: 'DZD', num_items: cartItems.length })
+    trackTT('InitiateCheckout', { value: cartTotal, currency: 'DZD' })
 
     const { data: order, error: orderErr } = await supabase
       .from('orders')
@@ -80,6 +83,7 @@ export default function Checkout() {
     await supabase.from('order_items').insert(orderItemsPayload)
 
     track('Purchase', { value: cartTotal, currency: 'DZD', order_id: order.id })
+    trackTT('PlaceAnOrder', { value: cartTotal, currency: 'DZD' })
 
     navigate('/order-confirm', { state: { orderId: order.id, customerName: form.customer_name } })
   }

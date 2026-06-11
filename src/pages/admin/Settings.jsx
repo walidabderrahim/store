@@ -11,6 +11,7 @@ export default function Settings() {
     primary_color: '#111827',
     whatsapp_number: '',
     pixel_id: '',
+    tiktok_pixel_id: '',
     delivery_text: '',
     shipping_home: 700,
     shipping_desk: 400,
@@ -26,7 +27,7 @@ export default function Settings() {
   useEffect(() => {
     supabase
       .from('stores')
-      .select('store_name, logo_url, primary_color, whatsapp_number, pixel_id, delivery_text, shipping_home, shipping_desk, wilaya_prices')
+      .select('store_name, logo_url, primary_color, whatsapp_number, pixel_id, tiktok_pixel_id, delivery_text, shipping_home, shipping_desk, wilaya_prices')
       .eq('id', STORE_ID)
       .single()
       .then(({ data }) => {
@@ -279,6 +280,29 @@ export default function Settings() {
                 </p>
               )}
             </div>
+          </div>
+
+          {/* TikTok Pixel */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 space-y-3">
+            <h2 className="font-semibold text-gray-700">TikTok Pixel</h2>
+            <p className="text-sm text-gray-400">
+              Copiez votre Pixel ID depuis TikTok Ads Manager → Assets → Events.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Pixel ID</label>
+              <input
+                type="text"
+                value={form.tiktok_pixel_id}
+                onChange={(e) => setForm((f) => ({ ...f, tiktok_pixel_id: e.target.value }))}
+                placeholder="Ex : C3ABCDEFGHIJK1234567"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-800"
+              />
+            </div>
+            {form.tiktok_pixel_id && (
+              <p className="text-xs text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                ✓ TikTok Pixel actif — PageView, ViewContent, AddToCart, PlaceAnOrder seront trackés.
+              </p>
+            )}
           </div>
 
           {/* Meta Pixel */}

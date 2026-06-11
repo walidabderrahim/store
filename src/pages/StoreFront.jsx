@@ -9,6 +9,7 @@ import { supabase, STORE_ID } from '../lib/supabase'
 import { useStore } from '../hooks/useStore'
 import { useCart } from '../hooks/useCart'
 import { usePixel } from '../hooks/usePixel'
+import { useTikTokPixel } from '../hooks/useTikTokPixel'
 import ProductCard from '../components/ProductCard'
 import CartDrawer from '../components/CartDrawer'
 
@@ -88,7 +89,8 @@ const TRUST_BADGES = [
 export default function StoreFront() {
   const { store } = useStore()
   const { items, addItem, removeItem, updateQty, total, count } = useCart()
-  const { track } = usePixel(store?.pixel_id)
+  const { track }   = usePixel(store?.pixel_id)
+  const { track: trackTT } = useTikTokPixel(store?.tiktok_pixel_id)
 
   const [products, setProducts]     = useState(DEMO_PRODUCTS)
   const [categories, setCategories] = useState([...new Set(DEMO_PRODUCTS.map(p => p.category))])
@@ -119,6 +121,7 @@ export default function StoreFront() {
   const handleAddToCart = (product) => {
     addItem(product)
     track('AddToCart', { content_name: product.name, value: product.price, currency: 'DZD' })
+    trackTT('AddToCart', { content_id: product.id, content_name: product.name, value: product.price, currency: 'DZD' })
     setCartOpen(true)
   }
 

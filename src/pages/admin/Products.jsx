@@ -5,6 +5,7 @@ import { Package, Pencil, Trash2, Plus, Loader2 } from 'lucide-react'
 
 const EMPTY_FORM = {
   name: '', description: '', price: '', stock: '', category: '', images: [], is_active: true,
+  quantity_offers: { enabled: false, tiers: [] },
 }
 
 export default function Products() {
@@ -41,6 +42,7 @@ export default function Products() {
       price: p.price, stock: p.stock, category: p.category || '',
       images: p.images?.length > 0 ? p.images : p.image_url ? [p.image_url] : [],
       is_active: p.is_active,
+      quantity_offers: p.quantity_offers || { enabled: false, tiers: [] },
     })
     setEditId(p.id)
     setShowModal(true)
@@ -69,6 +71,32 @@ export default function Products() {
     setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== idx) }))
   }
 
+  const addTier = () => {
+    const tiers = form.quantity_offers?.tiers || []
+    const nextQty = tiers.length > 0 ? tiers[tiers.length - 1].qty + 1 : 1
+    setForm((f) => ({
+      ...f,
+      quantity_offers: { ...f.quantity_offers, tiers: [...tiers, { qty: nextQty, price: '' }] },
+    }))
+  }
+
+  const removeTier = (idx) => {
+    setForm((f) => ({
+      ...f,
+      quantity_offers: { ...f.quantity_offers, tiers: f.quantity_offers.tiers.filter((_, i) => i !== idx) },
+    }))
+  }
+
+  const updateTier = (idx, field, val) => {
+    setForm((f) => ({
+      ...f,
+      quantity_offers: {
+        ...f.quantity_offers,
+        tiers: f.quantity_offers.tiers.map((t, i) => i === idx ? { ...t, [field]: Number(val) } : t),
+      },
+    }))
+  }
+
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -78,6 +106,7 @@ export default function Products() {
       price: Number(form.price), stock: Number(form.stock),
       images,
       image_url: images[0] || '',
+      quantity_offers: form.quantity_offers?.enabled ? form.quantity_offers : null,
       store_id: STORE_ID,
     }
     if (editId) {
@@ -325,6 +354,69 @@ export default function Products() {
                   className="w-4 h-4"
                 />
                 <label htmlFor="is_active" className="text-sm text-gray-700">Produit visible sur la boutique</label>
+              </div>
+
+              {/* Offres par quantité */}
+              <div className="border-t pt-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Offres par quantité</p>
+                    <p className="text-xs text-gray-400">Ex : 1 pièce = 1000 DA, 2 pièces = 1700 DA</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({
+                      ...f,
+                      quantity_offers: { ...f.quantity_offers, enabled: !f.quantity_offers?.enabled },
+                    }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${
+                      form.quantity_offers?.enabled ? 'bg-gray-900' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      form.quantity_offers?.enabled ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {form.quantity_offers?.enabled && (
+                  <div className="space-y-2">
+                    {(form.quantity_offers.tiers || []).map((tier, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          value={tier.qty}
+                          onChange={(e) => updateTier(idx, 'qty', e.target.value)}
+                          className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:border-gray-400"
+                          placeholder="Qté"
+                        />
+                        <span className="text-gray-400 text-xs shrink-0">pcs →</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={tier.price}
+                          onChange={(e) => updateTier(idx, 'price', e.target.value)}
+                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:border-gray-400"
+                          placeholder="Prix total (DA)"
+                        />
+                        <span className="text-xs text-gray-400 shrink-0">DA</span>
+                        <button
+                          type="button"
+                          onClick={() => removeTier(idx)}
+                          className="w-6 text-red-400 hover:text-red-600 text-xl leading-none font-bold shrink-0"
+                        >×</button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addTier}
+                      className="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
+                    >
+                      + Ajouter une offre
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-2">

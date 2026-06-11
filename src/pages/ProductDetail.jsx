@@ -9,6 +9,7 @@ import {
 import { supabase, STORE_ID } from '../lib/supabase'
 import { useStore } from '../hooks/useStore'
 import { usePixel } from '../hooks/usePixel'
+import { useTikTokPixel } from '../hooks/useTikTokPixel'
 import { useCart } from '../hooks/useCart'
 import { WILAYA_NAMES, getCommunes } from '../data/wilayas'
 
@@ -19,7 +20,8 @@ export default function ProductDetail() {
   const { state } = useLocation()
   const navigate  = useNavigate()
   const { store } = useStore()
-  const { track } = usePixel(store?.pixel_id)
+  const { track }   = usePixel(store?.pixel_id)
+  const { track: trackTT } = useTikTokPixel(store?.tiktok_pixel_id)
   const { count } = useCart()
 
   const primary  = store?.primary_color || '#EA580C'
@@ -35,7 +37,15 @@ export default function ProductDetail() {
         if (data) setProduct(data)
       })
     }
-    if (product) track('ViewContent', { content_name: product.name, value: product.price, currency: 'DZD' })
+    if (product) {
+      track('ViewContent', { content_name: product.name, value: product.price, currency: 'DZD' })
+      trackTT('ViewContent', { content_id: product.id, content_name: product.name, value: product.price, currency: 'DZD' })
+      if (product.quantity_offers?.enabled && product.quantity_offers?.tiers?.length > 0) {
+        const first = product.quantity_offers.tiers[0]
+        setQty(first.qty)
+        setSelectedTierPrice(first.price)
+      }
+    }
   }, [id])
 
   const [selectedColor, setColor] = useState(null)
@@ -49,16 +59,21 @@ export default function ProductDetail() {
   const [errors, setErrors]       = useState({})
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading]     = useState(false)
-  const [orderResult, setOrderResult] = useState(null)
+  const [orderResult, setOrderResult]       = useState(null)
+  const [selectedTierPrice, setSelectedTierPrice] = useState(null)
 
   const wilayaOverride = form.customer_wilaya ? (store?.wilaya_prices || {})[form.customer_wilaya] : null
   const shippingHome   = wilayaOverride?.home ?? store?.shipping_home ?? 700
   const shippingDesk   = wilayaOverride?.desk ?? store?.shipping_desk ?? 400
 
+  const hasOffers = product?.quantity_offers?.enabled && (product?.quantity_offers?.tiers?.length ?? 0) > 0
+
   const communes      = getCommunes(form.customer_wilaya)
   const shippingPrice = form.delivery_type === 'domicile' ? shippingHome
     : form.delivery_type === 'bureau' ? shippingDesk : null
-  const subtotal = product ? product.price * qty : 0
+  const subtotal = hasOffers && selectedTierPrice !== null
+    ? selectedTierPrice
+    : (product ? product.price * qty : 0)
   const total    = shippingPrice !== null ? subtotal + shippingPrice : subtotal
 
   const images    = product?.images?.length > 0 ? product.images : product?.image_url ? [product.image_url] : []
@@ -85,6 +100,7 @@ export default function ProductDetail() {
     if (!validate()) return
     setLoading(true)
     track('InitiateCheckout', { value: total, currency: 'DZD' })
+    trackTT('InitiateCheckout', { value: total, currency: 'DZD' })
 
     const notes = [
       selectedColor ? `اللون: ${selectedColor}` : '',
@@ -110,9 +126,10 @@ export default function ProductDetail() {
         order_id:   order.id,
         product_id: product.id.startsWith('d') ? null : product.id,
         quantity:   qty,
-        unit_price: product.price,
+        unit_price: hasOffers ? Math.round(subtotal / qty) : product.price,
       }])
       track('Purchase', { value: total, currency: 'DZD' })
+      trackTT('PlaceAnOrder', { value: total, currency: 'DZD' })
       setOrderResult(order)
     } else {
       setOrderResult({ id: 'DEMO', demo: true })
@@ -467,23 +484,51 @@ export default function ProductDetail() {
               {/* 4. Quantity */}
               <div className="p-5 space-y-4">
                 <SectionHeader Icon={ShoppingCart} title="الكمية" primary={primary} />
-                <div className="flex items-center justify-center gap-5">
-                  <button
-                    onClick={() => setQty(q => Math.max(1, q - 1))}
-                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center shadow-sm hover:opacity-90 transition"
-                    style={{ backgroundColor: primary }}
-                  >
-                    <Minus size={20} />
-                  </button>
-                  <span className="text-3xl font-black text-gray-800 w-12 text-center">{qty}</span>
-                  <button
-                    onClick={() => setQty(q => q + 1)}
-                    className="w-12 h-12 rounded-xl text-white flex items-center justify-center shadow-sm hover:opacity-90 transition"
-                    style={{ backgroundColor: primary }}
-                  >
-                    <Plus size={20} />
-                  </button>
-                </div>
+                {hasOffers ? (
+                  <div className="space-y-2">
+                    {product.quantity_offers.tiers.map((tier) => {
+                      const isSelected = qty === tier.qty && selectedTierPrice === tier.price
+                      const saving = product.price * tier.qty - tier.price
+                      return (
+                        <button
+                          key={tier.qty}
+                          type="button"
+                          onClick={() => { setQty(tier.qty); setSelectedTierPrice(tier.price) }}
+                          className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all"
+                          style={isSelected ? { borderColor: primary, backgroundColor: primary + '0d' } : { borderColor: '#e5e7eb' }}
+                        >
+                          <span className="font-bold text-gray-700 text-sm">{tier.qty} {tier.qty === 1 ? 'قطعة' : 'قطع'}</span>
+                          <div className="text-left">
+                            <p className="font-black text-base" style={{ color: isSelected ? primary : '#111827' }}>
+                              {Number(tier.price).toLocaleString('ar-DZ')} دج
+                            </p>
+                            {saving > 0 && (
+                              <p className="text-xs text-green-600">وفر {Number(saving).toLocaleString('ar-DZ')} دج</p>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-5">
+                    <button
+                      onClick={() => setQty(q => Math.max(1, q - 1))}
+                      className="w-12 h-12 rounded-xl text-white flex items-center justify-center shadow-sm hover:opacity-90 transition"
+                      style={{ backgroundColor: primary }}
+                    >
+                      <Minus size={20} />
+                    </button>
+                    <span className="text-3xl font-black text-gray-800 w-12 text-center">{qty}</span>
+                    <button
+                      onClick={() => setQty(q => q + 1)}
+                      className="w-12 h-12 rounded-xl text-white flex items-center justify-center shadow-sm hover:opacity-90 transition"
+                      style={{ backgroundColor: primary }}
+                    >
+                      <Plus size={20} />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="h-px" style={{ backgroundColor: primary + '20' }} />
@@ -493,7 +538,7 @@ export default function ProductDetail() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span className="font-bold">{subtotal.toLocaleString('ar-DZ')} دج</span>
-                    <span>سعر المنتج × {qty}</span>
+                    <span>{hasOffers ? `${qty} ${qty === 1 ? 'قطعة' : 'قطع'}` : `سعر المنتج × ${qty}`}</span>
                   </div>
                   {shippingPrice !== null && (
                     <div className="flex justify-between text-gray-600">
