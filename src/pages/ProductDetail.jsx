@@ -15,6 +15,32 @@ import { WILAYA_NAMES, getCommunes } from '../data/wilayas'
 
 const phoneRegex = /^(05|06|07)\d{8}$/
 
+const TG_TOKEN   = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
+const TG_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID
+
+async function sendTelegramNotification(order, product, qty, total, shippingPrice, notes, deliveryType) {
+  if (!TG_TOKEN || !TG_CHAT_ID) return
+  const deliveryLabel = deliveryType === 'domicile' ? '🏠 توصيل للمنزل' : '🏢 مكتب توصيل'
+  const text = [
+    `🛒 <b>طلب جديد!</b>`,
+    ``,
+    `📦 <b>المنتج:</b> ${product.name}`,
+    `👤 <b>العميل:</b> ${order.customer_name}`,
+    `📞 <b>الهاتف:</b> <code>${order.customer_phone}</code>`,
+    `📍 <b>الولاية:</b> ${order.customer_wilaya}`,
+    `🚚 <b>التوصيل:</b> ${deliveryLabel} — ${shippingPrice !== null ? shippingPrice.toLocaleString() + ' دج' : '—'}`,
+    notes ? `📝 <b>ملاحظات:</b> ${notes}` : '',
+    ``,
+    `💰 <b>الإجمالي: ${total.toLocaleString()} دج</b>`,
+  ].filter(l => l !== null).join('\n')
+
+  await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: TG_CHAT_ID, text, parse_mode: 'HTML' }),
+  }).catch(() => {})
+}
+
 export default function ProductDetail() {
   const { id }    = useParams()
   const { state } = useLocation()
@@ -146,6 +172,7 @@ export default function ProductDetail() {
       }])
       track('Purchase', { value: total, currency: 'DZD' })
       trackTT('PlaceAnOrder', { value: total, currency: 'DZD' })
+      sendTelegramNotification(order, product, qty, total, shippingPrice, notes, form.delivery_type)
       if (abandonedIdRef.current) {
         supabase.from('abandoned_orders').delete().eq('id', abandonedIdRef.current)
         abandonedIdRef.current = null

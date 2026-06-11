@@ -143,21 +143,20 @@ export default function AdminLayout({ children }) {
           )
         })}
         <button
+          onClick={() => setLang(lang === 'fr' ? 'ar' : 'fr')}
+          className="w-12 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] text-gray-400 hover:text-white transition-colors border-r border-gray-700"
+        >
+          <span className="text-sm font-black leading-none">{lang === 'fr' ? 'ع' : 'F'}</span>
+          <span>{lang === 'fr' ? 'عربي' : 'FR'}</span>
+        </button>
+        <button
           onClick={handleLogout}
-          className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] text-gray-500 hover:text-white transition-colors"
+          className="w-12 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] text-gray-500 hover:text-white transition-colors"
         >
           <LogOut size={20} />
           <span>{t('Sortir', 'خروج')}</span>
         </button>
       </nav>
-
-      {/* Mobile lang toggle */}
-      <button
-        onClick={() => setLang(lang === 'fr' ? 'ar' : 'fr')}
-        className="lg:hidden fixed top-3 right-3 z-50 text-xs bg-gray-800 text-white font-bold px-2.5 py-1.5 rounded-lg shadow"
-      >
-        {lang === 'fr' ? 'عربي' : 'FR'}
-      </button>
     </div>
   )
 }
