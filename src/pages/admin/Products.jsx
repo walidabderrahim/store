@@ -6,6 +6,7 @@ import { Package, Pencil, Trash2, Plus, Loader2 } from 'lucide-react'
 const EMPTY_FORM = {
   name: '', description: '', price: '', compare_price: '', stock: '', category: '', images: [], is_active: true,
   quantity_offers: { enabled: false, tiers: [] },
+  variants: { colors: [], sizes: [] },
 }
 
 export default function Products() {
@@ -16,6 +17,7 @@ export default function Products() {
   const [editId, setEditId]         = useState(null)
   const [saving, setSaving]         = useState(false)
   const [imgUploading, setImgUploading] = useState(false)
+  const [sizeInput, setSizeInput]   = useState('')
   const fileRef = useRef()
 
   const fetchProducts = async () => {
@@ -43,6 +45,7 @@ export default function Products() {
       images: p.images?.length > 0 ? p.images : p.image_url ? [p.image_url] : [],
       is_active: p.is_active,
       quantity_offers: p.quantity_offers || { enabled: false, tiers: [] },
+      variants: p.variants || { colors: [], sizes: [] },
     })
     setEditId(p.id)
     setShowModal(true)
@@ -87,6 +90,43 @@ export default function Products() {
     }))
   }
 
+  const addColor = () => {
+    setForm((f) => ({
+      ...f,
+      variants: { ...f.variants, colors: [...(f.variants?.colors || []), { name: '', hex: '#6366f1' }] },
+    }))
+  }
+  const removeColor = (idx) => {
+    setForm((f) => ({
+      ...f,
+      variants: { ...f.variants, colors: f.variants.colors.filter((_, i) => i !== idx) },
+    }))
+  }
+  const updateColor = (idx, field, val) => {
+    setForm((f) => ({
+      ...f,
+      variants: {
+        ...f.variants,
+        colors: f.variants.colors.map((c, i) => i === idx ? { ...c, [field]: val } : c),
+      },
+    }))
+  }
+  const addSize = () => {
+    const s = sizeInput.trim()
+    if (!s) return
+    setForm((f) => ({
+      ...f,
+      variants: { ...f.variants, sizes: [...(f.variants?.sizes || []), s] },
+    }))
+    setSizeInput('')
+  }
+  const removeSize = (idx) => {
+    setForm((f) => ({
+      ...f,
+      variants: { ...f.variants, sizes: f.variants.sizes.filter((_, i) => i !== idx) },
+    }))
+  }
+
   const updateTier = (idx, field, val) => {
     setForm((f) => ({
       ...f,
@@ -109,6 +149,7 @@ export default function Products() {
       images,
       image_url: images[0] || '',
       quantity_offers: form.quantity_offers?.enabled ? form.quantity_offers : null,
+      variants: (form.variants?.colors?.length > 0 || form.variants?.sizes?.length > 0) ? form.variants : null,
       store_id: STORE_ID,
     }
     if (editId) {
@@ -454,6 +495,82 @@ export default function Products() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Variantes */}
+              <div className="border-t pt-3 space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Variantes du produit</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Laissez vide si le produit n'a pas de variantes (ex: taille unique)</p>
+                </div>
+
+                {/* Couleurs */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Couleurs</p>
+                  {(form.variants?.colors || []).map((c, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={c.hex}
+                        onChange={(e) => updateColor(idx, 'hex', e.target.value)}
+                        className="w-9 h-9 rounded-lg cursor-pointer border border-gray-200 p-0.5 shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={c.name}
+                        onChange={(e) => updateColor(idx, 'name', e.target.value)}
+                        placeholder="Nom (ex: Rouge, Bleu…)"
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeColor(idx)}
+                        className="w-6 text-red-400 hover:text-red-600 text-xl leading-none font-bold shrink-0"
+                      >×</button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addColor}
+                    className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                  >
+                    <Plus size={14} /> Ajouter une couleur
+                  </button>
+                </div>
+
+                {/* Tailles */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tailles</p>
+                  {(form.variants?.sizes || []).length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {form.variants.sizes.map((s, idx) => (
+                        <span key={idx} className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full text-sm font-medium">
+                          {s}
+                          <button
+                            type="button"
+                            onClick={() => removeSize(idx)}
+                            className="text-gray-400 hover:text-red-500 leading-none font-bold"
+                          >×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={sizeInput}
+                      onChange={(e) => setSizeInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSize() } }}
+                      placeholder="Ex: S, M, L, XL, 38, 40…"
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={addSize}
+                      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium"
+                    >Ajouter</button>
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">

@@ -1,12 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut, PhoneOff } from 'lucide-react'
 
 const NAV = [
-  { to: '/admin/dashboard', Icon: LayoutDashboard, label: 'Tableau de bord', short: 'Accueil' },
-  { to: '/admin/products',  Icon: Package,          label: 'Produits',        short: 'Produits' },
-  { to: '/admin/orders',    Icon: ShoppingCart,     label: 'Commandes',       short: 'Commandes' },
-  { to: '/admin/settings',  Icon: Settings,         label: 'Paramètres',      short: 'Réglages' },
+  { to: '/admin/dashboard',  Icon: LayoutDashboard, label: 'Tableau de bord',        short: 'Accueil'  },
+  { to: '/admin/products',   Icon: Package,          label: 'Produits',               short: 'Produits' },
+  { to: '/admin/orders',     Icon: ShoppingCart,     label: 'Commandes',              short: 'Commandes'},
+  { to: '/admin/abandoned',  Icon: PhoneOff,         label: 'Abandonnées',            short: 'Abandon'  },
+  { to: '/admin/settings',   Icon: Settings,         label: 'Paramètres',             short: 'Réglages' },
 ]
 
 export default function AdminLayout({ children }) {

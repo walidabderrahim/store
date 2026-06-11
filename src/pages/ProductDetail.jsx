@@ -29,7 +29,8 @@ export default function ProductDetail() {
 
   const [product, setProduct] = useState(state?.product || null)
   const [imgIdx, setImgIdx]   = useState(0)
-  const formRef = useRef(null)
+  const formRef        = useRef(null)
+  const abandonedIdRef = useRef(null)
 
   useEffect(() => {
     if (!product && id && !id.startsWith('d')) {
@@ -61,6 +62,21 @@ export default function ProductDetail() {
   const [loading, setLoading]     = useState(false)
   const [orderResult, setOrderResult]       = useState(null)
   const [selectedTierPrice, setSelectedTierPrice] = useState(null)
+
+  // Capture abandoned order when phone becomes valid
+  useEffect(() => {
+    if (!product || !phoneRegex.test(form.customer_phone)) return
+    if (abandonedIdRef.current) return
+    supabase.from('abandoned_orders').insert([{
+      store_id: STORE_ID,
+      product_id: product.id?.startsWith('d') ? null : product.id,
+      product_name: product.name,
+      customer_phone: form.customer_phone,
+      customer_name: form.customer_name || null,
+    }]).select().single().then(({ data }) => {
+      if (data) abandonedIdRef.current = data.id
+    })
+  }, [form.customer_phone])
 
   const wilayaOverride = form.customer_wilaya ? (store?.wilaya_prices || {})[form.customer_wilaya] : null
   const shippingHome   = wilayaOverride?.home ?? store?.shipping_home ?? 700
@@ -130,6 +146,10 @@ export default function ProductDetail() {
       }])
       track('Purchase', { value: total, currency: 'DZD' })
       trackTT('PlaceAnOrder', { value: total, currency: 'DZD' })
+      if (abandonedIdRef.current) {
+        supabase.from('abandoned_orders').delete().eq('id', abandonedIdRef.current)
+        abandonedIdRef.current = null
+      }
       setOrderResult(order)
     } else {
       setOrderResult({ id: 'DEMO', demo: true })

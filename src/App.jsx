@@ -9,8 +9,9 @@ import OrderConfirm  from './pages/OrderConfirm'
 import Login        from './pages/admin/Login'
 import Dashboard    from './pages/admin/Dashboard'
 import Products     from './pages/admin/Products'
-import Orders       from './pages/admin/Orders'
-import Settings     from './pages/admin/Settings'
+import Orders          from './pages/admin/Orders'
+import Settings        from './pages/admin/Settings'
+import AbandonedOrders from './pages/admin/AbandonedOrders'
 
 function ProtectedRoute({ children }) {
   const [session, setSession] = useState(undefined)
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/admin/products"  element={<ProtectedRoute><Products /></ProtectedRoute>} />
         <Route path="/admin/orders"    element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/admin/abandoned" element={<ProtectedRoute><AbandonedOrders /></ProtectedRoute>} />
         <Route path="/admin/settings"  element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
         {/* Redirect /admin → /admin/dashboard */}
